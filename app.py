@@ -173,29 +173,36 @@ def shorten_labels(data: pd.DataFrame, source: str, target: str, max_chars: int 
 
 
 def horizontal_bar(data: pd.DataFrame, x: str, y: str, color: str | None = None, height: int = 430):
+    data = data.copy()
     value_name = "Peso" if x == "peso" else "Quantidade"
-    text_template = "%{text:,.1f}" if x == "peso" else "%{text:,.0f}"
+    if x == "peso":
+        data["_label_valor"] = data[x].map(lambda value: f"{format_weight(value)} kg")
+        axis_title = "Peso (kg)"
+    else:
+        data["_label_valor"] = data[x].map(format_number)
+        axis_title = "Quantidade"
+
     fig = px.bar(
         data,
         x=x,
         y=y,
         color=color,
         orientation="h",
-        text=x,
+        text="_label_valor",
         color_discrete_sequence=PALETTE,
         custom_data=[column for column in ["Setor", "peso", "linhas", "pedidos"] if column in data.columns],
     )
     fig.update_traces(
-        texttemplate=text_template,
+        texttemplate="%{text}",
         textposition="outside",
         cliponaxis=False,
         marker_line_width=0,
-        hovertemplate=f"<b>%{{y}}</b><br>{value_name}: %{{x:,.1f}}<extra></extra>",
+        hovertemplate=f"<b>%{{y}}</b><br>{value_name}: %{{text}}<extra></extra>",
     )
     fig.update_layout(
         height=height,
         margin=dict(l=8, r=42, t=12, b=8),
-        xaxis_title=None,
+        xaxis_title=axis_title,
         yaxis_title=None,
         legend_title_text="Setor",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
@@ -705,7 +712,7 @@ with checker_tab:
 
 render_panel_title(
     "Peso por colaborador",
-    "Separadores que mais carregaram peso no periodo e setores filtrados.",
+    "Separadores que mais carregaram peso em kg no periodo e setores filtrados.",
 )
 with st.container(border=True):
     top_workers_weight = worker_weight_rank.head(top_n)
