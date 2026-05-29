@@ -117,7 +117,7 @@ def format_number(value: float) -> str:
 
 
 def format_weight(value: float) -> str:
-    return f"{value:,.1f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return format_number(round(value))
 
 
 def format_weight_unit(value: float) -> str:
