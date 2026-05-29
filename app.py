@@ -30,8 +30,8 @@ TABLE_COLUMN_CONFIG = {
     "Qtd. separada": st.column_config.NumberColumn("Qtd. separada", format="%d"),
     "Qtd. conferida": st.column_config.NumberColumn("Qtd. conferida", format="%d"),
     "Qtde. separado": st.column_config.NumberColumn("Qtde. separado", format="%d"),
-    "Peso": st.column_config.NumberColumn("Peso", format="%.2f kg"),
-    "Peso medio": st.column_config.NumberColumn("Peso medio", format="%.2f kg"),
+    "Peso": st.column_config.TextColumn("Peso"),
+    "Peso medio": st.column_config.TextColumn("Peso medio"),
     "Linhas": st.column_config.NumberColumn("Linhas", format="%d"),
     "Pedidos": st.column_config.NumberColumn("Pedidos", format="%d"),
     "Setores": st.column_config.NumberColumn("Setores", format="%d"),
@@ -120,6 +120,22 @@ def format_weight(value: float) -> str:
     return f"{value:,.1f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
+def format_weight_unit(value: float) -> str:
+    if pd.isna(value):
+        return ""
+    if abs(value) >= 1000:
+        return f"{format_weight(value / 1000)} t"
+    return f"{format_weight(value)} kg"
+
+
+def format_weight_columns(data: pd.DataFrame) -> pd.DataFrame:
+    data = data.copy()
+    for column in ["Peso", "Peso medio"]:
+        if column in data.columns:
+            data[column] = data[column].map(format_weight_unit)
+    return data
+
+
 def aggregate_people(df: pd.DataFrame, person_column: str, sort_column: str) -> pd.DataFrame:
     return (
         df.dropna(subset=[person_column])
@@ -176,15 +192,18 @@ def horizontal_bar(data: pd.DataFrame, x: str, y: str, color: str | None = None,
     data = data.copy()
     value_name = "Peso" if x == "peso" else "Quantidade"
     if x == "peso":
-        data["_label_valor"] = data[x].map(lambda value: f"{format_weight(value)} kg")
-        axis_title = "Peso (kg)"
+        use_tons = data[x].max() >= 1000
+        data["_plot_valor"] = data[x] / 1000 if use_tons else data[x]
+        data["_label_valor"] = data[x].map(format_weight_unit)
+        axis_title = "Peso (t)" if use_tons else "Peso (kg)"
     else:
+        data["_plot_valor"] = data[x]
         data["_label_valor"] = data[x].map(format_number)
         axis_title = "Quantidade"
 
     fig = px.bar(
         data,
-        x=x,
+        x="_plot_valor",
         y=y,
         color=color,
         orientation="h",
@@ -629,7 +648,7 @@ metric_cols = st.columns(5)
 with metric_cols[0]:
     render_metric("Qtd. separada", total_qtd, "soma das unidades")
 with metric_cols[1]:
-    render_metric("Peso total", total_peso, "peso dos itens", formatter=format_weight, suffix=" kg")
+    render_metric("Peso total", total_peso, "peso dos itens", formatter=format_weight_unit)
 with metric_cols[2]:
     render_metric("Linhas", total_linhas, "registros filtrados")
 with metric_cols[3]:
@@ -671,15 +690,17 @@ with separator_tab:
             width="stretch",
         )
     st.dataframe(
-        chart_data.rename(
-            columns={
-                "Nome separador": "Colaborador",
-                "quantidade": "Qtd. separada",
-                "peso": "Peso",
-                "linhas": "Linhas",
-                "pedidos": "Pedidos",
-            }
-        )[["Setor", "Colaborador", "Qtd. separada", "Peso", "Linhas", "Pedidos"]],
+        format_weight_columns(
+            chart_data.rename(
+                columns={
+                    "Nome separador": "Colaborador",
+                    "quantidade": "Qtd. separada",
+                    "peso": "Peso",
+                    "linhas": "Linhas",
+                    "pedidos": "Pedidos",
+                }
+            )[["Setor", "Colaborador", "Qtd. separada", "Peso", "Linhas", "Pedidos"]]
+        ),
         hide_index=True,
         width="stretch",
         column_config=TABLE_COLUMN_CONFIG,
@@ -696,15 +717,17 @@ with checker_tab:
             width="stretch",
         )
     st.dataframe(
-        chart_data.rename(
-            columns={
-                "Func. conferência": "Colaborador",
-                "quantidade": "Qtd. conferida",
-                "peso": "Peso",
-                "linhas": "Linhas",
-                "pedidos": "Pedidos",
-            }
-        )[["Setor", "Colaborador", "Qtd. conferida", "Peso", "Linhas", "Pedidos"]],
+        format_weight_columns(
+            chart_data.rename(
+                columns={
+                    "Func. conferência": "Colaborador",
+                    "quantidade": "Qtd. conferida",
+                    "peso": "Peso",
+                    "linhas": "Linhas",
+                    "pedidos": "Pedidos",
+                }
+            )[["Setor", "Colaborador", "Qtd. conferida", "Peso", "Linhas", "Pedidos"]]
+        ),
         hide_index=True,
         width="stretch",
         column_config=TABLE_COLUMN_CONFIG,
@@ -712,7 +735,7 @@ with checker_tab:
 
 render_panel_title(
     "Peso por colaborador",
-    "Separadores que mais carregaram peso em kg no periodo e setores filtrados.",
+    "Separadores que mais carregaram peso no periodo e setores filtrados.",
 )
 with st.container(border=True):
     top_workers_weight = worker_weight_rank.head(top_n)
@@ -721,17 +744,19 @@ with st.container(border=True):
         width="stretch",
     )
     st.dataframe(
-        top_workers_weight.rename(
-            columns={
-                "Nome separador": "Colaborador",
-                "quantidade": "Qtd. separada",
-                "peso": "Peso",
-                "peso_medio": "Peso medio",
-                "linhas": "Linhas",
-                "pedidos": "Pedidos",
-                "setores": "Setores",
-            }
-        )[["Colaborador", "Peso", "Peso medio", "Qtd. separada", "Linhas", "Pedidos", "Setores"]],
+        format_weight_columns(
+            top_workers_weight.rename(
+                columns={
+                    "Nome separador": "Colaborador",
+                    "quantidade": "Qtd. separada",
+                    "peso": "Peso",
+                    "peso_medio": "Peso medio",
+                    "linhas": "Linhas",
+                    "pedidos": "Pedidos",
+                    "setores": "Setores",
+                }
+            )[["Colaborador", "Peso", "Peso medio", "Qtd. separada", "Linhas", "Pedidos", "Setores"]]
+        ),
         hide_index=True,
         width="stretch",
         column_config=TABLE_COLUMN_CONFIG,
@@ -752,9 +777,11 @@ with product_col:
             width="stretch",
         )
         st.dataframe(
-            top_products.rename(
-                columns={"quantidade": "Qtd. separada", "peso": "Peso", "linhas": "Linhas", "pedidos": "Pedidos"}
-            )[["Produto", "Qtd. separada", "Peso", "Linhas", "Pedidos"]],
+            format_weight_columns(
+                top_products.rename(
+                    columns={"quantidade": "Qtd. separada", "peso": "Peso", "linhas": "Linhas", "pedidos": "Pedidos"}
+                )[["Produto", "Qtd. separada", "Peso", "Linhas", "Pedidos"]]
+            ),
             hide_index=True,
             width="stretch",
             column_config=TABLE_COLUMN_CONFIG,
@@ -769,9 +796,11 @@ with address_col:
             width="stretch",
         )
         st.dataframe(
-            top_addresses.rename(
-                columns={"quantidade": "Qtd. separada", "peso": "Peso", "linhas": "Linhas", "pedidos": "Pedidos"}
-            )[["Endereço", "Qtd. separada", "Peso", "Linhas", "Pedidos"]],
+            format_weight_columns(
+                top_addresses.rename(
+                    columns={"quantidade": "Qtd. separada", "peso": "Peso", "linhas": "Linhas", "pedidos": "Pedidos"}
+                )[["Endereço", "Qtd. separada", "Peso", "Linhas", "Pedidos"]]
+            ),
             hide_index=True,
             width="stretch",
             column_config=TABLE_COLUMN_CONFIG,
@@ -792,7 +821,7 @@ with st.expander("Ver base filtrada", expanded=False):
         "Placa",
     ]
     st.dataframe(
-        filtered[[column for column in visible_columns if column in filtered.columns]],
+        format_weight_columns(filtered[[column for column in visible_columns if column in filtered.columns]]),
         hide_index=True,
         width="stretch",
         column_config=TABLE_COLUMN_CONFIG,
