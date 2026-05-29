@@ -512,7 +512,7 @@ st.markdown(
         <div class="hero-brand">
             {logo_html}
             <div>
-                <h1>JR DASHBOARD • Ranking ferra/chapa</h1>
+                <h1>JR DASHBOARD • Ranking ferragem e chaparia</h1>
                 <p>Separação, conferência, peso por colaborador, produtos e endereços.</p>
             </div>
         </div>
