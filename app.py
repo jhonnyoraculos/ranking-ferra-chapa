@@ -16,14 +16,14 @@ REQUIRED_COLUMNS = {
     "Nome separador",
     "Func. conferência",
 }
-PALETTE = ["#c5152f", "#1f4d8f", "#263238", "#6b7c93", "#c7982b", "#00856f", "#8b3ffc"]
+PALETTE = ["#22346f", "#c5152f", "#d87900", "#1f4d8f", "#263238", "#00856f", "#8b3ffc"]
 
 
 st.set_page_config(
     page_title="Dashboard Chaparia",
     page_icon=str(LOGO_FILE) if LOGO_FILE.exists() else None,
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 TABLE_COLUMN_CONFIG = {
@@ -243,62 +243,72 @@ st.markdown(
     :root {
         --jr-red: #c5152f;
         --jr-blue: #1f4d8f;
+        --jr-navy: #22346f;
+        --jr-navy-dark: #1b2a60;
         --ink: #1d2939;
         --muted: #667085;
-        --line: #e3e8ef;
-        --paper: #f5f7fb;
+        --line: #cfdbef;
+        --paper: #f4f7fc;
     }
 
     .stApp {
         background: var(--paper);
+        background-image:
+            radial-gradient(circle at 11% 34%, rgba(34,52,111,.16) 0 2px, transparent 3px),
+            radial-gradient(circle at 50% 25%, rgba(197,21,47,.13) 0 2px, transparent 3px),
+            radial-gradient(circle at 83% 64%, rgba(34,52,111,.14) 0 2px, transparent 3px);
+        background-size: 360px 360px, 420px 420px, 520px 520px;
     }
 
     section[data-testid="stSidebar"] {
-        background: #ffffff;
-        border-right: 1px solid var(--line);
-    }
-
-    section[data-testid="stSidebar"] div[data-testid="stImage"] img {
-        border-radius: 8px;
+        display: none;
     }
 
     .block-container {
-        max-width: 1500px;
-        padding: 1.25rem 2rem 2.5rem;
+        max-width: 1540px;
+        padding: 0 1.5rem 2.5rem;
     }
 
     .app-hero {
-        background: linear-gradient(135deg, #172033 0%, #253f68 58%, #c5152f 100%);
-        border-radius: 8px;
+        background: var(--jr-navy);
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        box-shadow: 0 14px 34px rgba(27, 42, 96, .22);
         color: #ffffff;
-        padding: 22px 26px;
-        margin-bottom: 18px;
+        padding: 26px 32px 22px;
+        margin: 0 -1.5rem 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 22px;
-        min-height: 128px;
+        min-height: 104px;
     }
 
     .app-hero h1 {
-        font-size: clamp(1.75rem, 2.3vw, 2.55rem);
-        line-height: 1.08;
-        margin: 0 0 8px;
+        font-size: clamp(1.2rem, 1.6vw, 1.7rem);
+        line-height: 1.15;
+        margin: 0;
         letter-spacing: 0;
+        font-weight: 800;
     }
 
     .app-hero p {
         color: rgba(255,255,255,.78);
-        margin: 0;
+        margin: 6px 0 0;
         font-size: .95rem;
     }
 
+    .hero-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
     .hero-logo {
-        background: rgba(255,255,255,.95);
+        background: transparent;
         border-radius: 8px;
-        padding: 12px;
-        width: 96px;
-        height: 96px;
+        padding: 0;
+        width: 46px;
+        height: 46px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -306,34 +316,55 @@ st.markdown(
     }
 
     .hero-logo img {
-        max-width: 76px;
-        max-height: 76px;
+        max-width: 46px;
+        max-height: 46px;
+        border-radius: 8px;
+    }
+
+    .filter-shell {
+        background: var(--jr-navy);
+        margin: 0 -1.5rem -50px;
+        padding: 0 32px 78px;
+    }
+
+    .filter-title {
+        color: rgba(255,255,255,.72);
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        margin: 0 0 8px;
+    }
+
+    .dashboard-spacer {
+        height: 64px;
     }
 
     .metric-card {
         background: #ffffff;
-        border: 1px solid var(--line);
-        border-left: 5px solid var(--jr-red);
+        border: 1px solid #c6d6ef;
+        border-top: 4px solid var(--jr-navy);
         border-radius: 8px;
-        padding: 15px 17px;
-        min-height: 112px;
-        box-shadow: 0 8px 20px rgba(16, 24, 40, .05);
+        padding: 24px 18px;
+        min-height: 126px;
+        text-align: center;
+        box-shadow: 0 18px 38px rgba(27, 42, 96, .12);
     }
 
     .metric-card span {
         display: block;
         color: var(--muted);
-        font-size: .78rem;
+        font-size: .76rem;
         font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 0;
     }
 
     .metric-card strong {
         display: block;
-        color: var(--ink);
-        font-size: 2rem;
+        color: var(--jr-navy);
+        font-size: 1.85rem;
         line-height: 1.1;
-        margin-top: 8px;
+        margin-top: 12px;
         letter-spacing: 0;
     }
 
@@ -345,27 +376,38 @@ st.markdown(
     }
 
     .panel-title {
-        margin: 26px 0 8px;
+        margin: 30px 0 10px;
     }
 
     .panel-title h2 {
-        color: var(--ink);
-        font-size: 1.18rem;
+        color: var(--jr-navy);
+        font-size: 1rem;
         margin: 0;
         letter-spacing: 0;
+        font-weight: 800;
+    }
+
+    .panel-title h2::after {
+        content: "";
+        display: block;
+        width: 34px;
+        height: 3px;
+        background: var(--jr-red);
+        border-radius: 999px;
+        margin-top: 10px;
     }
 
     .panel-title p {
         color: var(--muted);
         font-size: .9rem;
-        margin: 3px 0 0;
+        margin: 6px 0 0;
     }
 
     div[data-testid="stVerticalBlockBorderWrapper"] {
         border-radius: 8px;
-        border-color: var(--line);
-        box-shadow: 0 8px 22px rgba(16, 24, 40, .04);
-        background: #ffffff;
+        border-color: #c8d3e4;
+        box-shadow: 0 16px 34px rgba(27, 42, 96, .08);
+        background: rgba(255,255,255,.92);
     }
 
     div[data-testid="stDataFrame"] {
@@ -395,21 +437,61 @@ st.markdown(
         border-radius: 8px;
     }
 
+    div[data-testid="stSelectbox"] label,
+    div[data-testid="stMultiSelect"] label,
+    div[data-testid="stDateInput"] label,
+    div[data-testid="stSlider"] label,
+    div[data-testid="stRadio"] label {
+        color: rgba(255,255,255,.74);
+        font-size: .76rem;
+        font-weight: 800;
+    }
+
+    div[data-testid="stSelectbox"] > div > div,
+    div[data-testid="stDateInput"] input,
+    div[data-testid="stNumberInput"] input {
+        min-height: 40px;
+    }
+
+    div[data-testid="stButton"] button {
+        background: var(--jr-red);
+        color: #ffffff;
+        border: 0;
+        border-radius: 8px;
+        min-height: 40px;
+        font-weight: 800;
+        box-shadow: none;
+    }
+
+    div[data-testid="stButton"] button:hover {
+        background: #a91227;
+        color: #ffffff;
+        border: 0;
+    }
+
+    .main .block-container > div:nth-child(5) {
+        margin-top: -44px;
+    }
+
     @media (max-width: 800px) {
         .block-container {
-            padding: 1rem;
+            padding: 0 1rem 1.5rem;
         }
         .app-hero {
             align-items: flex-start;
             flex-direction: column;
+            margin: 0 -1rem 0;
+            padding: 20px 18px;
         }
-        .hero-logo {
-            width: 76px;
-            height: 76px;
+        .filter-shell {
+            margin: 0 -1rem -28px;
+            padding: 0 18px 54px;
         }
-        .hero-logo img {
-            max-width: 58px;
-            max-height: 58px;
+        .main .block-container > div:nth-child(5) {
+            margin-top: -22px;
+        }
+        .dashboard-spacer {
+            height: 34px;
         }
     }
     </style>
@@ -427,44 +509,87 @@ if LOGO_FILE.exists():
 st.markdown(
     f"""
     <div class="app-hero">
-        <div>
-            <h1>Separação e conferência</h1>
-            <p>Ranking por setor, colaboradores, produtos e endereços com base em {excel_file.name}</p>
+        <div class="hero-brand">
+            {logo_html}
+            <div>
+                <h1>JR DASHBOARD • Ranking ferra/chapa</h1>
+                <p>Separação, conferência, peso por colaborador, produtos e endereços.</p>
+            </div>
         </div>
-        {logo_html}
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-with st.sidebar:
-    if LOGO_FILE.exists():
-        st.image(str(LOGO_FILE), width=82)
-    st.markdown("### Filtros")
+setores = sorted(df["Setor"].dropna().unique().tolist())
+date_column = "Data separação" if "Data separação" in df.columns else None
+if date_column and df[date_column].notna().any():
+    min_date = df[date_column].min().date()
+    max_date = df[date_column].max().date()
+else:
+    min_date = None
+    max_date = None
 
-    setores = sorted(df["Setor"].dropna().unique().tolist())
-    setor_mode = st.radio("Setores", ["Todos", "Escolher"], horizontal=True)
-    if setor_mode == "Escolher":
-        selected_setores = st.multiselect("Selecionar setores", setores, default=setores[:1])
-    else:
-        selected_setores = setores
+if "setor_filter" not in st.session_state:
+    st.session_state.setor_filter = "Todos"
+if "metric_filter" not in st.session_state:
+    st.session_state.metric_filter = "Quantidade"
+if "top_n_filter" not in st.session_state:
+    st.session_state.top_n_filter = 10
+if "date_filter" not in st.session_state and min_date and max_date:
+    st.session_state.date_filter = (min_date, max_date)
 
-    date_column = "Data separação" if "Data separação" in df.columns else None
-    if date_column and df[date_column].notna().any():
-        min_date = df[date_column].min().date()
-        max_date = df[date_column].max().date()
+
+def reset_filters() -> None:
+    st.session_state.setor_filter = "Todos"
+    st.session_state.metric_filter = "Quantidade"
+    st.session_state.top_n_filter = 10
+    if min_date and max_date:
+        st.session_state.date_filter = (min_date, max_date)
+
+st.markdown('<div class="filter-shell"><div class="filter-title">FILTROS</div></div>', unsafe_allow_html=True)
+filter_cols = st.columns([1.4, 2.2, 1.6, 1.3, 1.5, 1.2])
+with filter_cols[0]:
+    selected_setor = st.selectbox(
+        "Setor",
+        ["Todos", *setores],
+        key="setor_filter",
+        label_visibility="collapsed",
+    )
+with filter_cols[1]:
+    if min_date and max_date:
         selected_dates = st.date_input(
             "Período",
-            value=(min_date, max_date),
+            value=st.session_state.date_filter,
             min_value=min_date,
             max_value=max_date,
             format="DD/MM/YYYY",
+            key="date_filter",
+            label_visibility="collapsed",
         )
     else:
         selected_dates = None
+with filter_cols[2]:
+    selected_metric = st.selectbox(
+        "Ordenar por",
+        ["Quantidade", "Peso"],
+        key="metric_filter",
+        label_visibility="collapsed",
+    )
+with filter_cols[3]:
+    top_n = st.selectbox(
+        "Top N",
+        [5, 10, 15, 20, 25],
+        format_func=lambda value: f"Top {value}",
+        key="top_n_filter",
+        label_visibility="collapsed",
+    )
+with filter_cols[4]:
+    st.button("Limpar filtros", width="stretch", on_click=reset_filters)
+with filter_cols[5]:
+    st.button("Atualizar", width="stretch")
 
-    top_n = st.slider("Itens por ranking", min_value=5, max_value=25, value=10, step=1)
-    selected_metric = st.radio("Ordenar por", ["Quantidade", "Peso"], horizontal=True)
+selected_setores = setores if selected_setor == "Todos" else [selected_setor]
 
 filtered = df[df["Setor"].isin(selected_setores)].copy()
 
@@ -477,6 +602,8 @@ if isinstance(selected_dates, tuple) and date_column and len(selected_dates) == 
 if filtered.empty:
     st.warning("Nenhum registro encontrado para os filtros selecionados.")
     st.stop()
+
+st.markdown('<div class="dashboard-spacer"></div>', unsafe_allow_html=True)
 
 total_qtd = filtered["Qtde. separado"].sum()
 total_peso = filtered["Peso"].sum()
@@ -501,7 +628,7 @@ with metric_cols[2]:
 with metric_cols[3]:
     render_metric("Pedidos", total_pedidos, "pedidos distintos")
 with metric_cols[4]:
-    render_metric("Setor lider", total_setores, top_sector)
+    render_metric("Setores", total_setores, f"Líder: {top_sector}")
 
 separator_rank = aggregate_people(filtered, "Nome separador", metric_column)
 checker_rank = aggregate_people(filtered, "Func. conferência", metric_column)
