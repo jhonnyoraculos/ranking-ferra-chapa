@@ -565,11 +565,11 @@ if "top_n_filter" not in st.session_state:
 month_options = []
 if date_column and df[date_column].notna().any():
     month_periods = sorted(df[date_column].dropna().dt.to_period("M").unique())
-    month_options = [month.strftime("%m/%Y") for month in month_periods]
+    month_options = ["Todos", *[month.strftime("%m/%Y") for month in month_periods]]
 
 if month_options:
     if "month_filter" not in st.session_state or st.session_state.month_filter not in month_options:
-        st.session_state.month_filter = month_options[-1]
+        st.session_state.month_filter = "Todos"
 
 
 def reset_filters() -> None:
@@ -577,7 +577,7 @@ def reset_filters() -> None:
     st.session_state.metric_filter = "Quantidade"
     st.session_state.top_n_filter = 10
     if month_options:
-        st.session_state.month_filter = month_options[-1]
+        st.session_state.month_filter = "Todos"
 
 st.markdown('<div class="filter-shell"><div class="filter-title">FILTROS</div></div>', unsafe_allow_html=True)
 filter_cols = st.columns([1.4, 2.2, 1.6, 1.3, 1.5, 1.2])
@@ -622,7 +622,7 @@ selected_setores = setores if selected_setor == "Todos" else [selected_setor]
 
 filtered = df[df["Setor"].isin(selected_setores)].copy()
 
-if selected_month and date_column:
+if selected_month and selected_month != "Todos" and date_column:
     selected_month_number, selected_year = selected_month.split("/")
     selected_period = pd.Period(
         year=int(selected_year),
@@ -649,7 +649,7 @@ top_sector = (
     .sort_values(ascending=False)
     .index[0]
 )
-month_detail = f"mês {selected_month}" if selected_month else "mês não identificado"
+month_detail = "todos os meses" if not selected_month or selected_month == "Todos" else f"mês {selected_month}"
 
 metric_cols = st.columns(5)
 with metric_cols[0]:
