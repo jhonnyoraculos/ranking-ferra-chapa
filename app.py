@@ -38,7 +38,6 @@ TABLE_COLUMN_CONFIG = {
 }
 
 
-@st.cache_data(show_spinner=False)
 def find_excel_file() -> Path:
     files = sorted(
         [*BASE_DIR.glob("*.xls"), *BASE_DIR.glob("*.xlsx")],
@@ -51,7 +50,7 @@ def find_excel_file() -> Path:
 
 
 @st.cache_data(show_spinner="Carregando planilha...")
-def load_data(excel_path: Path) -> pd.DataFrame:
+def load_data(excel_path: Path, file_version: int) -> pd.DataFrame:
     raw = pd.read_excel(excel_path, sheet_name=0, header=None)
 
     header_row = None
@@ -261,7 +260,7 @@ def render_panel_title(title: str, subtitle: str) -> None:
 
 
 excel_file = find_excel_file()
-df = load_data(excel_file)
+df = load_data(excel_file, excel_file.stat().st_mtime_ns)
 
 st.markdown(
     """
