@@ -561,16 +561,23 @@ if "metric_filter" not in st.session_state:
     st.session_state.metric_filter = "Quantidade"
 if "top_n_filter" not in st.session_state:
     st.session_state.top_n_filter = 10
-if "date_filter" not in st.session_state and min_date and max_date:
-    st.session_state.date_filter = (min_date, max_date)
+
+month_options = []
+if date_column and df[date_column].notna().any():
+    month_periods = sorted(df[date_column].dropna().dt.to_period("M").unique())
+    month_options = [month.strftime("%m/%Y") for month in month_periods]
+
+if month_options:
+    if "month_filter" not in st.session_state or st.session_state.month_filter not in month_options:
+        st.session_state.month_filter = month_options[-1]
 
 
 def reset_filters() -> None:
     st.session_state.setor_filter = "Todos"
     st.session_state.metric_filter = "Quantidade"
     st.session_state.top_n_filter = 10
-    if min_date and max_date:
-        st.session_state.date_filter = (min_date, max_date)
+    if month_options:
+        st.session_state.month_filter = month_options[-1]
 
 st.markdown('<div class="filter-shell"><div class="filter-title">FILTROS</div></div>', unsafe_allow_html=True)
 filter_cols = st.columns([1.4, 2.2, 1.6, 1.3, 1.5, 1.2])
@@ -582,18 +589,15 @@ with filter_cols[0]:
         label_visibility="collapsed",
     )
 with filter_cols[1]:
-    if min_date and max_date:
-        selected_dates = st.date_input(
-            "Período",
-            value=st.session_state.date_filter,
-            min_value=min_date,
-            max_value=max_date,
-            format="DD/MM/YYYY",
-            key="date_filter",
+    if month_options:
+        selected_month = st.selectbox(
+            "Mês",
+            month_options,
+            key="month_filter",
             label_visibility="collapsed",
         )
     else:
-        selected_dates = None
+        selected_month = None
 with filter_cols[2]:
     selected_metric = st.selectbox(
         "Ordenar por",
@@ -618,11 +622,14 @@ selected_setores = setores if selected_setor == "Todos" else [selected_setor]
 
 filtered = df[df["Setor"].isin(selected_setores)].copy()
 
-if isinstance(selected_dates, tuple) and date_column and len(selected_dates) == 2:
-    start_date, end_date = selected_dates
-    filtered = filtered[
-        filtered[date_column].dt.date.between(start_date, end_date, inclusive="both")
-    ]
+if selected_month and date_column:
+    selected_month_number, selected_year = selected_month.split("/")
+    selected_period = pd.Period(
+        year=int(selected_year),
+        month=int(selected_month_number),
+        freq="M",
+    )
+    filtered = filtered[filtered[date_column].dt.to_period("M") == selected_period]
 
 if filtered.empty:
     st.warning("Nenhum registro encontrado para os filtros selecionados.")
@@ -642,16 +649,17 @@ top_sector = (
     .sort_values(ascending=False)
     .index[0]
 )
+month_detail = f"mês {selected_month}" if selected_month else "mês não identificado"
 
 metric_cols = st.columns(5)
 with metric_cols[0]:
-    render_metric("Qtd. separada", total_qtd, "soma das unidades")
+    render_metric("Qtd. separada", total_qtd, month_detail)
 with metric_cols[1]:
-    render_metric("Peso total", total_peso, "peso dos itens", formatter=format_weight_unit)
+    render_metric("Peso total", total_peso, month_detail, formatter=format_weight_unit)
 with metric_cols[2]:
-    render_metric("Linhas", total_linhas, "registros filtrados")
+    render_metric("Linhas", total_linhas, month_detail)
 with metric_cols[3]:
-    render_metric("Pedidos", total_pedidos, "pedidos distintos")
+    render_metric("Pedidos", total_pedidos, month_detail)
 with metric_cols[4]:
     render_metric("Setores", total_setores, f"Líder: {top_sector}")
 

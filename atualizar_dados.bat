@@ -20,7 +20,22 @@ if errorlevel 1 (
 git status --short
 echo.
 
-git add -- "*.xls" "*.xlsx"
+set "FOUND_EXCEL="
+for %%F in (*.xls) do if exist "%%~fF" (
+    git add -- "%%~fF"
+    set "FOUND_EXCEL=1"
+)
+for %%F in (*.xlsx) do if exist "%%~fF" (
+    git add -- "%%~fF"
+    set "FOUND_EXCEL=1"
+)
+
+if not defined FOUND_EXCEL (
+    echo Nenhuma planilha .xls ou .xlsx encontrada nesta pasta.
+    echo.
+    pause
+    exit /b 1
+)
 
 git diff --cached --quiet
 if not errorlevel 1 (
